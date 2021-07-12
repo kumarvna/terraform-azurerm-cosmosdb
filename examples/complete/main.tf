@@ -71,6 +71,9 @@ module "cosmosdb" {
   private_subnet_address_prefix = ["10.1.5.0/29"]
   #  existing_private_dns_zone     = "demo.example.com"
 
+  # (Optional) To enable Azure Monitoring for Azure MySQL database
+  # (Optional) Specify `storage_account_name` to save monitoring logs to storage. 
+  log_analytics_workspace_name = "loganalytics-we-sharedtest2"
 
   # CosmosDB Firewall Support: Specifies the set of IP addresses / ranges to be included as an allowed list 
   # IP addresses/ranges must be comma separated and must not contain any spaces.

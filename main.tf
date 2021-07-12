@@ -6,11 +6,9 @@ locals {
   resource_group_name = element(coalescelist(data.azurerm_resource_group.rgrp.*.name, azurerm_resource_group.rg.*.name, [""]), 0)
   location            = element(coalescelist(data.azurerm_resource_group.rgrp.*.location, azurerm_resource_group.rg.*.location, [""]), 0)
 
-  default_failover_locations = {
-    default = {
-      location = local.location
-    }
-  }
+  default_failover_locations = [{
+    location = local.location
+  }]
 }
 
 #---------------------------------------------------------
@@ -28,6 +26,12 @@ resource "azurerm_resource_group" "rg" {
   tags     = merge({ "Name" = format("%s", var.resource_group_name) }, var.tags, )
 }
 
+data "azurerm_log_analytics_workspace" "logws" {
+  count               = var.log_analytics_workspace_name != null ? 1 : 0
+  name                = var.log_analytics_workspace_name
+  resource_group_name = local.resource_group_name
+}
+
 #-------------------------------------------------------------
 # CosmosDB (formally DocumentDB) Account - Default (required)
 #-------------------------------------------------------------
@@ -41,14 +45,14 @@ resource "random_integer" "intg" {
 }
 
 resource "azurerm_cosmosdb_account" "main" {
-  for_each                              = var.cosmosdb_account
-  name                                  = format("%s-%s", each.key, random_integer.intg.result)
-  resource_group_name                   = local.resource_group_name
-  location                              = local.location
-  offer_type                            = each.value["offer_type"]
-  kind                                  = each.value["kind"]
-  ip_range_filter                       = join(",", var.allowed_ip_range_cidrs)
-  enable_free_tier                      = each.value["enable_free_tier"]
+  for_each            = var.cosmosdb_account
+  name                = format("%s-%s", each.key, random_integer.intg.result)
+  resource_group_name = local.resource_group_name
+  location            = local.location
+  offer_type          = each.value["offer_type"]
+  kind                = each.value["kind"]
+  ip_range_filter     = join(",", var.allowed_ip_range_cidrs)
+  #  enable_free_tier                      = each.value["enable_free_tier"]
   analytical_storage_enabled            = each.value["analytical_storage_enabled"]
   enable_automatic_failover             = each.value["enable_automatic_failover"]
   public_network_access_enabled         = each.value["public_network_access_enabled"]
@@ -67,21 +71,10 @@ resource "azurerm_cosmosdb_account" "main" {
     max_staleness_prefix    = lookup(var.consistency_policy, "consistency_level") == "BoundedStaleness" ? lookup(var.consistency_policy, "max_staleness_prefix", 100) : null
   }
 
-  /*  dynamic "geo_location" {
+  dynamic "geo_location" {
     for_each = var.failover_locations == null ? local.default_failover_locations : var.failover_locations
     content {
-      prefix            = "tfex-cosmos-db-${random_integer.intg.result}-${geo_location.key}"
-      location          = geo_location.value.location
-      failover_priority = lookup(geo_location.value, "failover_priority", 0)
-      zone_redundant    = lookup(geo_location.value, "zone_redundant", false)
-    }
-  }
-*/
-
-  dynamic "geo_location" {
-    for_each = var.failover_locations != null ? [var.failover_locations] : []
-    content {
-      prefix            = "tfex-cosmos-db-${random_integer.intg.result}-${geo_location.value.location}"
+      #   prefix            = "${format("%s-%s", each.key, random_integer.intg.result)}-${geo_location.value.location}"
       location          = geo_location.value.location
       failover_priority = lookup(geo_location.value, "failover_priority", 0)
       zone_redundant    = lookup(geo_location.value, "zone_redundant", false)
@@ -175,7 +168,7 @@ data "azurerm_private_endpoint_connection" "private-ip1" {
 
 resource "azurerm_private_dns_zone" "dnszone1" {
   count               = var.existing_private_dns_zone == null && var.enable_private_endpoint ? 1 : 0
-  name                = "privatelink.redis.cache.windows.net"
+  name                = "privatelink.documents.azure.com"
   resource_group_name = local.resource_group_name
   tags                = merge({ "Name" = format("%s", "RedisCache-Private-DNS-Zone") }, var.tags, )
 }
@@ -197,8 +190,57 @@ resource "azurerm_private_dns_a_record" "arecord1" {
   ttl                 = 300
   records             = [data.azurerm_private_endpoint_connection.private-ip1.0.private_service_connection.0.private_ip_address]
 }
+/*
+resource "azurerm_private_dns_a_record" "arecord2" {
+  count               = var.enable_private_endpoint ? 1 : 0
+  name                = element([for n in azurerm_cosmosdb_account.main : n.geo_location], 0)
+  zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1.0.name : var.existing_private_dns_zone
+  resource_group_name = local.resource_group_name
+  ttl                 = 300
+  records             = element([data.azurerm_private_endpoint_connection.private-ip1.*.private_service_connection.0.private_ip_address], 1)
+}
+
+resource "azurerm_private_dns_a_record" "arecord3" {
+  count               = var.enable_private_endpoint ? 1 : 0
+  name                = element([for n in azurerm_cosmosdb_account.main : n.geo_location], 1)
+  zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1.0.name : var.existing_private_dns_zone
+  resource_group_name = local.resource_group_name
+  ttl                 = 300
+  records             = element([data.azurerm_private_endpoint_connection.private-ip1.*.private_service_connection.0.private_ip_address], 2)
+}
+*/
 
 
+#------------------------------------------------------------------
+# azurerm monitoring diagnostics  - Default is "false" 
+#------------------------------------------------------------------
+resource "azurerm_monitor_diagnostic_setting" "extaudit" {
+  count                      = var.log_analytics_workspace_name != null ? 1 : 0
+  name                       = lower("extaudit-${element([for n in azurerm_cosmosdb_account.main : n.name], 0)}-diag")
+  target_resource_id         = element([for n in azurerm_cosmosdb_account.main : n.id], 0)
+  log_analytics_workspace_id = data.azurerm_log_analytics_workspace.logws.0.id
+  storage_account_id         = var.storage_account_name != null ? var.storage_account_name : null
 
+  dynamic "log" {
+    for_each = var.extaudit_diag_logs
+    content {
+      category = log.value
+      enabled  = true
+      retention_policy {
+        enabled = false
+      }
+    }
+  }
 
+  metric {
+    category = "Requests"
 
+    retention_policy {
+      enabled = false
+    }
+  }
+
+  lifecycle {
+    ignore_changes = [log, metric]
+  }
+}

@@ -47,3 +47,23 @@ output "cosmosdb_connection_strings" {
   value       = module.cosmosdb.cosmosdb_connection_strings
   sensitive   = true
 }
+
+output "cosmosdb_private_endpoint" {
+  description = "id of the Redis Cache server Private Endpoint"
+  value       = module.cosmosdb.cosmosdb_private_endpoint
+}
+
+output "cosmosdb_private_dns_zone_domain" {
+  description = "DNS zone name of Redis Cache server Private endpoints dns name records"
+  value       = module.cosmosdb.cosmosdb_private_dns_zone_domain
+}
+
+output "cosmosdb_private_endpoint_ip" {
+  description = "Redis Cache server private endpoint IPv4 Addresses"
+  value       = module.cosmosdb.cosmosdb_private_endpoint_ip
+}
+
+output "cosmosdb_private_endpoint_fqdn" {
+  description = "Redis Cache server private endpoint FQDN Addresses"
+  value       = module.cosmosdb.cosmosdb_private_endpoint_fqdn
+}

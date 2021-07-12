@@ -47,7 +47,12 @@ variable "consistency_policy" {
 }
 
 variable "failover_locations" {
-  type        = map(string)
+  #  type        = map(map(string))
+  type = list(object({
+    location          = string
+    failover_priority = number
+    zone_redundant    = optional(bool)
+  }))
   description = "The name of the Azure region to host replicated data and their priority."
   default     = null
 }
@@ -111,6 +116,26 @@ variable "existing_private_dns_zone" {
 
 variable "private_subnet_address_prefix" {
   description = "The name of the subnet for private endpoints"
+  default     = null
+}
+
+variable "enable_advanced_threat_protection" {
+  description = "Threat detection policy configuration, known in the API as Server Security Alerts Policy. Currently available only for the SQL API."
+  default     = false
+}
+
+variable "log_analytics_workspace_name" {
+  description = "The name of log analytics workspace name"
+  default     = null
+}
+
+variable "extaudit_diag_logs" {
+  description = "CosmosDB Monitoring Category details for Azure Diagnostic setting"
+  default     = ["DataPlaneRequests", "MongoRequests", "QueryRuntimeStatistics", "PartitionKeyStatistics", "PartitionKeyRUConsumption", "ControlPlaneRequests", "CassandraRequests", "GremlinRequests", "TableApiRequests"]
+}
+
+variable "storage_account_name" {
+  description = "The name of the storage account name"
   default     = null
 }
 

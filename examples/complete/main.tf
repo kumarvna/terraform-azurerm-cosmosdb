@@ -12,25 +12,37 @@ module "cosmosdb" {
   location              = "westeurope"
 
   cosmosdb_account = {
-    demo1-cosmosdb-acc = {
+    demo-cosmosdb = {
       offer_type = "Standard"
       kind       = "GlobalDocumentDB"
     }
   }
 
+  # `max_staleness_prefix` must be greater then `100000` when more then one geo_location is used
+  #  `max_interval_in_seconds` must be greater then 300 (5min) when more then one geo_location is used
   consistency_policy = {
-    consistency_level = "BoundedStaleness"
+    consistency_level       = "BoundedStaleness"
+    max_staleness_prefix    = 100000
+    max_interval_in_seconds = 300
   }
 
-  # gio-failover 
-  failover_locations = {
-      location          = "northeurope"
+  # gio-failover
+  # Location prefix (key) must be 3 - 50 characters long, contain only lowercase letters, numbers and hyphens 
+  failover_locations = [
+    {
+      location          = "westeurope"
       failover_priority = 0
-      zone_redundant    = true
-  }
+    },
+    {
+      location          = "northeurope"
+      failover_priority = 1
+    }
+  ]
 
-  /*  #capabilities
-  capabilities = [
+  capabilities = ["EnableTable"]
+
+  #capabilities
+  /* capabilities = [
     "DisableRateLimitingResponses",
     "EnableAggregationPipeline",
     "EnableCassandra",
@@ -48,10 +60,30 @@ module "cosmosdb" {
   }
 
   managed_identity = true
+  #  enable_advanced_threat_protection = true
+
+  # Creating Private Endpoint requires, VNet name and address prefix to create a subnet
+  # By default this will create a `privatelink.mysql.database.azure.com` DNS zone. 
+  # To use existing private DNS zone specify `existing_private_dns_zone` with valid zone name
+  # Private endpoints doesn't work If using `subnet_id` to create redis inside a specified VNet.
+  enable_private_endpoint       = true
+  virtual_network_name          = "vnet-shared-hub-westeurope-001"
+  private_subnet_address_prefix = ["10.1.5.0/29"]
+  #  existing_private_dns_zone     = "demo.example.com"
+
 
   # CosmosDB Firewall Support: Specifies the set of IP addresses / ranges to be included as an allowed list 
   # IP addresses/ranges must be comma separated and must not contain any spaces.
-  #  allowed_ip_range_cidrs = ["1.2.3.4", "2.3.4.5"]
+  # Only publicly routable ranges are enforceable through IpRules. 
+  # IPv4 addresses or ranges contained in [10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16] not valid.
+  allowed_ip_range_cidrs = ["49.204.231.170", "1.2.3.4", "104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
+
+
+  # cosmosdb table
+  create_cosmosdb_table = true
+  autoscale_settings = {
+    max_throughput = 10000
+  }
 
   # Tags for Azure Resources
   tags = {

@@ -47,7 +47,7 @@ variable "consistency_policy" {
 }
 
 variable "failover_locations" {
-  type        = map(map(string))
+  type        = map(string)
   description = "The name of the Azure region to host replicated data and their priority."
   default     = null
 }
@@ -92,6 +92,26 @@ variable "cors_rules" {
 variable "managed_identity" {
   description = "If you want your SQL Server to have an managed identity. Defaults to false."
   default     = false
+}
+
+variable "enable_private_endpoint" {
+  description = "Manages a Private Endpoint to Azure database for Redis"
+  default     = false
+}
+
+variable "virtual_network_name" {
+  description = "The name of the virtual network"
+  default     = ""
+}
+
+variable "existing_private_dns_zone" {
+  description = "Name of the existing private DNS zone"
+  default     = null
+}
+
+variable "private_subnet_address_prefix" {
+  description = "The name of the subnet for private endpoints"
+  default     = null
 }
 
 variable "tags" {

@@ -12,7 +12,7 @@ module "cosmosdb" {
   location              = "westeurope"
 
   cosmosdb_account = {
-    demo-cosmosdb-account = {
+    demo1-cosmosdb-acc = {
       offer_type = "Standard"
       kind       = "GlobalDocumentDB"
     }
@@ -24,16 +24,13 @@ module "cosmosdb" {
 
   # gio-failover 
   failover_locations = {
-    failover-to-ne = {
       location          = "northeurope"
       failover_priority = 0
       zone_redundant    = true
-    }
   }
 
-  #capabilities
+  /*  #capabilities
   capabilities = [
-    "AllowSelfServeUpgradeToMongo36",
     "DisableRateLimitingResponses",
     "EnableAggregationPipeline",
     "EnableCassandra",
@@ -41,10 +38,8 @@ module "cosmosdb" {
     "EnableMongo",
     "EnableTable",
     "EnableServerless",
-    "MongoDBv3.4",
-    "mongoEnableDocLevelTTL"
   ]
-
+*/
   # backup
   backup = {
     type                = "Periodic"

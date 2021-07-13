@@ -139,26 +139,14 @@ variable "storage_account_name" {
   default     = null
 }
 
-variable "create_cosmosdb_table" {
+variable "cosmosdb_table" {
+  type = map(object({
+    throughput = optional(number)
+    autoscale_settings = optional(object({
+      max_throughput = number
+    }))
+  }))
   description = "Manages a Table within a Cosmos DB Account"
-  default     = false
-}
-
-variable "cosmosdb_table_name" {
-  description = "Specifies the name of the Cosmos DB Table"
-  default     = null
-}
-
-variable "throughput" {
-  description = "The throughput of Table (RU/s). Must be set in increments of `100`. The minimum value is `400`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply."
-  default     = 400
-}
-
-variable "autoscale_settings" {
-  type = object({
-    max_throughput = string
-  })
-  description = "The maximum throughput of the Table (RU/s). Must be between `4,000` and `1,000,000`. Must be set in increments of `1,000`. Conflicts with `throughput`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply."
   default     = null
 }
 

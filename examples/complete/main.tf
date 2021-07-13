@@ -32,17 +32,21 @@ module "cosmosdb" {
     {
       location          = "westeurope"
       failover_priority = 0
+      zone_redundant    = true
     },
     {
       location          = "northeurope"
       failover_priority = 1
+      zone_redundant    = true
     }
   ]
 
+  # required for cosmosdb table 
   capabilities = ["EnableTable"]
 
+  /*
   #capabilities
-  /* capabilities = [
+   capabilities = [
     "DisableRateLimitingResponses",
     "EnableAggregationPipeline",
     "EnableCassandra",
@@ -51,7 +55,7 @@ module "cosmosdb" {
     "EnableTable",
     "EnableServerless",
   ]
-*/
+
   # backup
   backup = {
     type                = "Periodic"
@@ -75,17 +79,29 @@ module "cosmosdb" {
   # (Optional) Specify `storage_account_name` to save monitoring logs to storage. 
   log_analytics_workspace_name = "loganalytics-we-sharedtest2"
 
+# cosmosdb table
+  create_cosmosdb_table = true
+  autoscale_settings = {
+    max_throughput = 10000
+  }
+
+*/
   # CosmosDB Firewall Support: Specifies the set of IP addresses / ranges to be included as an allowed list 
   # IP addresses/ranges must be comma separated and must not contain any spaces.
   # Only publicly routable ranges are enforceable through IpRules. 
   # IPv4 addresses or ranges contained in [10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16] not valid.
-  allowed_ip_range_cidrs = ["49.204.231.170", "1.2.3.4", "104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
+  # To allow access from azure portal add ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
+  # To allow [0.0.0.0] to Accept connections from within public Azure datacenters
+  allowed_ip_range_cidrs = ["49.204.231.170", "1.2.3.4", "104.42.195.92", "0.0.0.0", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
 
 
-  # cosmosdb table
-  create_cosmosdb_table = true
-  autoscale_settings = {
-    max_throughput = 10000
+  cosmosdb_table = {
+    demo-cosmosdb-table = {
+      autoscale_settings = {
+        max_throughput = 10000
+      }
+      #     throughput = 400
+    }
   }
 
   # Tags for Azure Resources

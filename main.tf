@@ -135,8 +135,26 @@ resource "azurerm_advanced_threat_protection" "example" {
 #  CosmosDB Table - Default is "false" 
 #---------------------------------------------------------
 resource "azurerm_cosmosdb_table" "main" {
-  count               = var.create_cosmosdb_table ? 1 : 0
-  name                = var.cosmosdb_table_name == null ? format("%s-table", element([for n in azurerm_cosmosdb_account.main : n.name], 0)) : var.cosmosdb_table_name
+  for_each            = var.cosmosdb_table != null ? { for k, v in var.cosmosdb_table : k => v if v != null } : {}
+  name                = each.key
+  resource_group_name = local.resource_group_name
+  account_name        = element([for n in azurerm_cosmosdb_account.main : n.name], 0)
+  throughput          = each.value["throughput"]
+
+  dynamic "autoscale_settings" {
+    for_each = each.value.autoscale_settings != null ? [each.value["autoscale_settings"]] : []
+    content {
+      max_throughput = lookup(each.value.autoscale_settings, "max_throughput", null)
+    }
+  }
+}
+
+#---------------------------------------------------------
+#  CosmosDB SQL API - Default is "false" 
+#---------------------------------------------------------
+resource "azurerm_cosmosdb_sql_database" "main" {
+  count               = var.create_cosmosdb_sql_database ? 1 : 0
+  name                = var.cosmosdb_sqldb_name == null ? format("%s-sqldb", element([for n in azurerm_cosmosdb_account.main : n.name], 0)) : var.cosmosdb_sqldb_name
   resource_group_name = local.resource_group_name
   account_name        = element([for n in azurerm_cosmosdb_account.main : n.name], 0)
   throughput          = var.autoscale_settings == null ? var.throughput : null
@@ -149,14 +167,6 @@ resource "azurerm_cosmosdb_table" "main" {
   }
 }
 
-#---------------------------------------------------------
-#  CosmosDB SQL API - Default is "false" 
-#---------------------------------------------------------
-/*
-resource "azurerm_cosmosdb_sql_database" "main" {
-  name = 
-}
-*/
 #---------------------------------------------------------
 # Private Link for CosmosDB Server - Default is "false" 
 #---------------------------------------------------------
@@ -222,26 +232,6 @@ resource "azurerm_private_dns_a_record" "arecord1" {
   ttl                 = 300
   records             = [data.azurerm_private_endpoint_connection.private-ip1.0.private_service_connection.0.private_ip_address]
 }
-/*
-resource "azurerm_private_dns_a_record" "arecord2" {
-  count               = var.enable_private_endpoint ? 1 : 0
-  name                = element([for n in azurerm_cosmosdb_account.main : n.geo_location], 0)
-  zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1.0.name : var.existing_private_dns_zone
-  resource_group_name = local.resource_group_name
-  ttl                 = 300
-  records             = element([data.azurerm_private_endpoint_connection.private-ip1.*.private_service_connection.0.private_ip_address], 1)
-}
-
-resource "azurerm_private_dns_a_record" "arecord3" {
-  count               = var.enable_private_endpoint ? 1 : 0
-  name                = element([for n in azurerm_cosmosdb_account.main : n.geo_location], 1)
-  zone_name           = var.existing_private_dns_zone == null ? azurerm_private_dns_zone.dnszone1.0.name : var.existing_private_dns_zone
-  resource_group_name = local.resource_group_name
-  ttl                 = 300
-  records             = element([data.azurerm_private_endpoint_connection.private-ip1.*.private_service_connection.0.private_ip_address], 2)
-}
-*/
-
 
 #------------------------------------------------------------------
 # azurerm monitoring diagnostics  - Default is "false" 

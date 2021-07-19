@@ -35,14 +35,13 @@ module "cosmosdb" {
       zone_redundant    = true
     },
     {
-      location          = "northeurope"
+      location          = "norwayeast"
       failover_priority = 1
       zone_redundant    = true
     }
   ]
 
-  # required for cosmosdb table 
-  capabilities = ["EnableTable"]
+
 
   /*
   #capabilities
@@ -79,12 +78,12 @@ module "cosmosdb" {
   # (Optional) Specify `storage_account_name` to save monitoring logs to storage. 
   log_analytics_workspace_name = "loganalytics-we-sharedtest2"
 
-# cosmosdb table
-  create_cosmosdb_table = true
-  autoscale_settings = {
-    max_throughput = 10000
-  }
 
+  cosmosdb_sql_database = {
+    demo-cosmosdb-sqldb = {
+      sqldb_throughput = 400
+    }
+  }
 */
   # CosmosDB Firewall Support: Specifies the set of IP addresses / ranges to be included as an allowed list 
   # IP addresses/ranges must be comma separated and must not contain any spaces.
@@ -92,9 +91,9 @@ module "cosmosdb" {
   # IPv4 addresses or ranges contained in [10.0.0.0/8,100.64.0.0/10,172.16.0.0/12,192.168.0.0/16] not valid.
   # To allow access from azure portal add ["104.42.195.92", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
   # To allow [0.0.0.0] to Accept connections from within public Azure datacenters
-  allowed_ip_range_cidrs = ["49.204.231.170", "1.2.3.4", "104.42.195.92", "0.0.0.0", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
+  allowed_ip_range_cidrs = ["49.204.226.198", "1.2.3.4", "104.42.195.92", "0.0.0.0", "40.76.54.131", "52.176.6.30", "52.169.50.45", "52.187.184.26"]
 
-
+  /*
   cosmosdb_table = {
     demo-cosmosdb-table = {
       autoscale_settings = {
@@ -103,6 +102,25 @@ module "cosmosdb" {
       #     throughput = 400
     }
   }
+
+  # required for cosmosdb table 
+  capabilities = ["EnableTable", "EnableServerless"]
+
+  # cosmosdb Table within a Cosmos DB Account
+  # To use a custom name, set an argument `cosmosdb_table_name` to valid string
+  # Either `cosmosdb_table_throughput` or `cosmosdb_table_autoscale_settings` to be present and not both
+  # Switching between autoscale and manual throughput is not supported via Terraform and manual task.
+  # The minimum value for `throughput` is `400` and `autoscale_settings` minimum value is `10000`
+  create_cosmosdb_table = true
+  cosmosdb_table_autoscale_settings = {
+    max_throughput = 10000
+  }
+
+
+*/
+  # cosmosdb sql database
+  create_cosmosdb_sql_database = true
+  cosmosdb_sqldb_throughput    = 400
 
   # Tags for Azure Resources
   tags = {

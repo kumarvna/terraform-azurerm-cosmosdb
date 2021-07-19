@@ -125,6 +125,9 @@ resource "azurerm_cosmosdb_account" "main" {
 
 }
 
+#-------------------------------------------------------------
+#  CosmosDB azure defender configuration - Default is "false" 
+#-------------------------------------------------------------
 resource "azurerm_advanced_threat_protection" "example" {
   count              = var.enable_advanced_threat_protection ? 1 : 0
   target_resource_id = element([for n in azurerm_cosmosdb_account.main : n.id], 0)
@@ -135,16 +138,15 @@ resource "azurerm_advanced_threat_protection" "example" {
 #  CosmosDB Table - Default is "false" 
 #---------------------------------------------------------
 resource "azurerm_cosmosdb_table" "main" {
-  for_each            = var.cosmosdb_table != null ? { for k, v in var.cosmosdb_table : k => v if v != null } : {}
-  name                = each.key
+  count               = var.create_cosmosdb_table ? 1 : 0
+  name                = var.cosmosdb_table_name == null ? format("%s-table", element([for n in azurerm_cosmosdb_account.main : n.name], 0)) : var.cosmosdb_table_name
   resource_group_name = local.resource_group_name
   account_name        = element([for n in azurerm_cosmosdb_account.main : n.name], 0)
-  throughput          = each.value["throughput"]
-
+  throughput          = var.cosmosdb_table_autoscale_settings == null ? var.cosmosdb_table_throughput : null
   dynamic "autoscale_settings" {
-    for_each = each.value.autoscale_settings != null ? [each.value["autoscale_settings"]] : []
+    for_each = var.cosmosdb_table_autoscale_settings != null ? [var.cosmosdb_table_autoscale_settings] : []
     content {
-      max_throughput = lookup(each.value.autoscale_settings, "max_throughput", null)
+      max_throughput = var.cosmosdb_table_throughput == null ? var.cosmosdb_table_autoscale_settings.max_throughput : null
     }
   }
 }
@@ -154,15 +156,15 @@ resource "azurerm_cosmosdb_table" "main" {
 #---------------------------------------------------------
 resource "azurerm_cosmosdb_sql_database" "main" {
   count               = var.create_cosmosdb_sql_database ? 1 : 0
-  name                = var.cosmosdb_sqldb_name == null ? format("%s-sqldb", element([for n in azurerm_cosmosdb_account.main : n.name], 0)) : var.cosmosdb_sqldb_name
+  name                = var.cosmosdb_sql_database_name == null ? format("%s-sql-database", element([for n in azurerm_cosmosdb_account.main : n.name], 0)) : var.cosmosdb_sql_database_name
   resource_group_name = local.resource_group_name
   account_name        = element([for n in azurerm_cosmosdb_account.main : n.name], 0)
-  throughput          = var.autoscale_settings == null ? var.throughput : null
+  throughput          = var.cosmosdb_sqldb_autoscale_settings == null ? var.cosmosdb_sqldb_throughput : null
 
   dynamic "autoscale_settings" {
-    for_each = var.autoscale_settings != null ? [var.autoscale_settings] : []
+    for_each = var.cosmosdb_table_autoscale_settings != null ? [var.cosmosdb_table_autoscale_settings] : []
     content {
-      max_throughput = var.autoscale_settings.max_throughput
+      max_throughput = var.cosmosdb_sqldb_throughput == null ? var.cosmosdb_table_autoscale_settings.max_throughput : null
     }
   }
 }

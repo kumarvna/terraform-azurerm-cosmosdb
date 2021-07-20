@@ -116,11 +116,45 @@ module "cosmosdb" {
     max_throughput = 10000
   }
 
-
 */
+
   # cosmosdb sql database
   create_cosmosdb_sql_database = true
   cosmosdb_sqldb_throughput    = 400
+
+
+  # cosmosdb sql container
+  create_cosmosdb_sql_container = true
+  sql_container_throughput      = 400
+
+  /*  indexing_policy = {
+    indexing_mode = "Consistent"
+    included_path = {
+      path = "/*"
+    }
+    included_path = {
+      path = "/included/?"
+    }
+    excluded_path = {
+      path = "/excluded/?"
+    }
+
+    composite_index = {
+      index = {
+        path  = "/*"
+        order = "Ascending"
+      }
+    }
+    spatial_index = {
+      path = "LineString"
+    }
+  }
+
+ */
+
+  unique_key = {
+    paths = ["/definition/idlong", "/definition/idshort"]
+  }
 
   # Tags for Azure Resources
   tags = {

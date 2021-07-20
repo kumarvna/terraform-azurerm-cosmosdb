@@ -67,3 +67,13 @@ output "cosmosdb_private_endpoint_fqdn" {
   description = "Redis Cache server private endpoint FQDN Addresses"
   value       = var.enable_private_endpoint ? element(concat(azurerm_private_dns_a_record.arecord1.*.fqdn, [""]), 0) : null
 }
+
+output "cosmosdb_table_id" {
+  description = "The resource ID of the CosmosDB Table"
+  value = var.create_cosmosdb_table ? azurerm_cosmosdb_table.main.0.id : null
+}
+
+output "cosmosdb_sql_database_id" {
+  description = "The resource ID of the CosmosDB SQL Database."
+  value = var.create_cosmosdb_sql_database ? azurerm_cosmosdb_sql_database.main.0.id : null
+}

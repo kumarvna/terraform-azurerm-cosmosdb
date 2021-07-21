@@ -230,7 +230,6 @@ resource "azurerm_cosmosdb_sql_container" "main" {
   }
 }
 
-
 #---------------------------------------------------------
 # Private Link for CosmosDB Server - Default is "false" 
 #---------------------------------------------------------

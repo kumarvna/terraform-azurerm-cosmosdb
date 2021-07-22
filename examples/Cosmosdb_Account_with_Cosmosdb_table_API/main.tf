@@ -10,9 +10,9 @@ module "cosmosdb" {
   resource_group_name   = "rg-shared-westeurope-01"
   location              = "westeurope"
 
-# Cosmosdb account details.
-# Currently Offer Type supports only be set to `Standard`
-# Specifies the Kind of CosmosDB to create - possible values are `GlobalDocumentDB` and `MongoDB`
+  # Cosmosdb account details.
+  # Currently Offer Type supports only be set to `Standard`
+  # Specifies the Kind of CosmosDB to create - possible values are `GlobalDocumentDB` and `MongoDB`
   cosmosdb_account = {
     demo-cosmosdb = {
       offer_type = "Standard"
@@ -51,8 +51,8 @@ module "cosmosdb" {
     retention_in_hours  = 8
   }
 
-# Advanced Threat Protection for Azure Cosmos DB represents an additional layer of protection
- enable_advanced_threat_protection = true
+  # Advanced Threat Protection for Azure Cosmos DB represents an additional layer of protection
+  enable_advanced_threat_protection = true
 
   # Creating Private Endpoint requires, VNet name and address prefix to create a subnet
   # By default this will create a `privatelink.mysql.database.azure.com` DNS zone. 
@@ -82,8 +82,8 @@ module "cosmosdb" {
     "52.176.6.30",
     "52.169.50.45",
     "52.187.184.26"
-    ]
- 
+  ]
+
   # Capabilities required for cosmosdb table 
   capabilities = ["EnableTable"]
 

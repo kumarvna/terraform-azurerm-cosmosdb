@@ -89,6 +89,14 @@ module "cosmosdb" {
     "52.187.184.26"
   ]
 
+  # SQL databases under an Azure Cosmos DB account
+  # To use a custom name, set an argument `cosmosdb_sql_database_name` to valid string
+  # Either `cosmosdb_sqldb_throughput` or `cosmosdb_sqldb_autoscale_settings` to be present and not both
+  # Switching between autoscale and manual throughput is not supported via Terraform and manual task.
+  # The minimum value for `throughput` is `400` and `autoscale_settings` minimum value is `10000`
+  create_cosmosdb_sql_database = true
+  cosmosdb_sqldb_throughput    = 400
+
   # Tags for Azure Resources
   tags = {
     Terraform   = "true"

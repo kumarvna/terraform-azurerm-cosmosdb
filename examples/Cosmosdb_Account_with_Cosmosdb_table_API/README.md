@@ -5,6 +5,11 @@ Azure Cosmos DB is a fully managed platform-as-a-service (PaaS). To use Azure Co
 ## Module Usage
 
 ```hcl
+#Azure provider Configuration
+provider "azurerm" {
+  features {}
+}
+
 module "cosmosdb" {
   source  = "kumarvna/cosmosdb/azurerm"
   version = "1.0.0"

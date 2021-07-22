@@ -1,3 +1,8 @@
+#Azure provider Configuration
+provider "azurerm" {
+  features {}
+}
+
 module "cosmosdb" {
   source  = "kumarvna/cosmosdb/azurerm"
   version = "1.0.0"

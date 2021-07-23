@@ -202,20 +202,32 @@ resource "azurerm_cosmosdb_sql_container" "main" {
     for_each = var.indexing_policy != null ? [var.indexing_policy] : []
     content {
       indexing_mode = var.indexing_policy.indexing_mode
-      included_path {
-        path = var.indexing_policy.included_path.path
-      }
-      excluded_path {
-        path = var.indexing_policy.excluded_path.path
-      }
-      composite_index {
-        index {
-          path  = var.indexing_policy.composite_index.index.path
-          order = var.indexing_policy.composite_index.index.order
+      dynamic "included_path" {
+        for_each = lookup(var.indexing_policy, "included_path") != null ? [lookup(var.indexing_policy, "included_path")] : []
+        content {
+          path = var.indexing_policy.included_path.path
         }
       }
-      spatial_index {
-        path = var.indexing_policy.spatial_index.path
+      dynamic "excluded_path" {
+        for_each = lookup(var.indexing_policy, "excluded_path") != null ? [lookup(var.indexing_policy, "excluded_path")] : []
+        content {
+          path = var.indexing_policy.excluded_path.path
+        }
+      }
+      dynamic "composite_index" {
+        for_each = lookup(var.indexing_policy, "composite_index") != null ? [lookup(var.indexing_policy, "composite_index")] : []
+        content {
+          index {
+            path  = var.indexing_policy.composite_index.index.path
+            order = var.indexing_policy.composite_index.index.order
+          }
+        }
+      }
+      dynamic "spatial_index" {
+        for_each = lookup(var.indexing_policy, "spatial_index") != null ? [lookup(var.indexing_policy, "spatial_index")] : []
+        content {
+          path = var.indexing_policy.spatial_index.path
+        }
       }
     }
   }

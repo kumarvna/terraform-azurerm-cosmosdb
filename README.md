@@ -123,7 +123,7 @@ By default, this module will not create a resource group and the name of an exis
 > [!NOTE]
 > *If you are using an existing resource group, then this module uses the same resource group location to create all resources in this module.*
 
-## **`key_vault_key_id`** -  Configure customer-managed keys with Azure Key Vault
+## **`key_vault_key_id`** - Customer-Managed keys with Azure Key Vault
 
 Data stored in your Azure Cosmos account is automatically and seamlessly encrypted with keys managed by Microsoft (service-managed keys). Optionally, you can choose to add a second layer of encryption with keys you manage (customer-managed keys).
 

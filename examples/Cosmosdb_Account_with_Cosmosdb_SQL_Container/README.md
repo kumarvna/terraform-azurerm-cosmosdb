@@ -17,8 +17,8 @@ module "cosmosdb" {
   # By default, this module will not create a resource group. Location will be same as existing RG.
   # proivde a name to use an existing resource group, specify the existing resource group name, 
   # set the argument to `create_resource_group = true` to create new resrouce group.
-  resource_group_name   = "rg-shared-westeurope-01"
-  location              = "westeurope"
+  resource_group_name = "rg-shared-westeurope-01"
+  location            = "westeurope"
 
   # Cosmosdb account details.
   # Currently Offer Type supports only be set to `Standard`
@@ -94,22 +94,28 @@ module "cosmosdb" {
     "52.187.184.26"
   ]
 
-  # cosmosdb sql database
+  # SQL databases under an Azure Cosmos DB account
+  # To use a custom name, set an argument `cosmosdb_sql_database_name` to valid string
+  # Either `cosmosdb_sqldb_throughput` or `cosmosdb_sqldb_autoscale_settings` to be present and not both
+  # Switching between autoscale and manual throughput is not supported via Terraform and manual task.
+  # The minimum value for `throughput` is `400` and `autoscale_settings` minimum value is `10000`
   create_cosmosdb_sql_database = true
   cosmosdb_sqldb_throughput    = 400
 
-  # cosmosdb sql container
+  # Create an SQL container under an Azure Cosmos DB SQL database
+  # The default indexing policy for newly created containers indexes every property of every item
+  # Recommended to use an opt-out `indexing policy` to let Azure Cosmos DB proactively index
+  # You can define unique keys only when you create an Azure Cosmos container
   create_cosmosdb_sql_container = true
   sql_container_throughput      = 400
-
-  /*
-    indexing_policy = {
+  /* 
+  indexing_policy = {
     indexing_mode = "Consistent"
     included_path = {
       path = "/*"
     }
     included_path = {
-      path = "/included/?"
+      path = "/*"
     }
     excluded_path = {
       path = "/excluded/?"
@@ -121,11 +127,12 @@ module "cosmosdb" {
         order = "Ascending"
       }
     }
+
     spatial_index = {
       path = "LineString"
     }
-  }
- */
+  } 
+*/
 
   unique_key = {
     paths = ["/definition/idlong", "/definition/idshort"]

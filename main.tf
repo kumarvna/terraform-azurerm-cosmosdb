@@ -143,6 +143,7 @@ resource "azurerm_cosmosdb_table" "main" {
   resource_group_name = local.resource_group_name
   account_name        = element([for n in azurerm_cosmosdb_account.main : n.name], 0)
   throughput          = var.cosmosdb_table_autoscale_settings == null ? var.cosmosdb_table_throughput : null
+
   dynamic "autoscale_settings" {
     for_each = var.cosmosdb_table_autoscale_settings != null ? [var.cosmosdb_table_autoscale_settings] : []
     content {
@@ -202,18 +203,21 @@ resource "azurerm_cosmosdb_sql_container" "main" {
     for_each = var.indexing_policy != null ? [var.indexing_policy] : []
     content {
       indexing_mode = var.indexing_policy.indexing_mode
+
       dynamic "included_path" {
         for_each = lookup(var.indexing_policy, "included_path") != null ? [lookup(var.indexing_policy, "included_path")] : []
         content {
           path = var.indexing_policy.included_path.path
         }
       }
+
       dynamic "excluded_path" {
         for_each = lookup(var.indexing_policy, "excluded_path") != null ? [lookup(var.indexing_policy, "excluded_path")] : []
         content {
           path = var.indexing_policy.excluded_path.path
         }
       }
+
       dynamic "composite_index" {
         for_each = lookup(var.indexing_policy, "composite_index") != null ? [lookup(var.indexing_policy, "composite_index")] : []
         content {
@@ -223,6 +227,7 @@ resource "azurerm_cosmosdb_sql_container" "main" {
           }
         }
       }
+
       dynamic "spatial_index" {
         for_each = lookup(var.indexing_policy, "spatial_index") != null ? [lookup(var.indexing_policy, "spatial_index")] : []
         content {

@@ -3,7 +3,7 @@
 Azure Cosmos DB is a fully managed platform-as-a-service (PaaS). To use Azure Cosmos DB, initially create an Azure Cosmos account and then databases, containers, items under it. This terraform module helps quickly create a cosmosDB account with cosmosdb table, SQL database and containers resources.
 
 > **[!NOTE]**
-> **This module now supports the meta arguments including `providers`, `depends_on`, `count`, and `for_each`.**
+> **This module supports the meta arguments including `providers`, `depends_on`, `count`, and `for_each`.**
 
 ## Resources supported
 
@@ -80,7 +80,7 @@ module "cosmosdb" {
   # Creating Private Endpoint requires, VNet name and address prefix to create a subnet
   # By default this will create a `privatelink.mysql.database.azure.com` DNS zone. 
   # To use existing private DNS zone specify `existing_private_dns_zone` with valid zone name
-  # Private endpoints doesn't work If using `subnet_id` to create redis inside a specified VNet.
+  # Private endpoints doesn't work If using `subnet_id` to create CosmosDB inside a specified VNet.
   enable_private_endpoint       = true
   virtual_network_name          = "vnet-shared-hub-westeurope-001"
   private_subnet_address_prefix = ["10.1.5.0/29"]
@@ -195,7 +195,6 @@ An effective naming convention assembles resource names by using important resou
 |------|---------|
 | azurerm | >= 2.59.0 |
 | random |>= 3.1.0 |
-| null | >= 3.1.0 |
 
 ## Inputs
 
@@ -204,17 +203,61 @@ Name | Description | Type | Default
 `create_resource_group` | Whether to create resource group and use it for all networking resources | string | `"false"`
 `resource_group_name`|The name of an existing resource group.|string|`""`
 `location`|The location for all resources while creating a new resource group.|string|`""`
+`cosmosdb_account`|Manages a CosmosDB (formally DocumentDB) Account specifications|map|`{}`
+`allowed_ip_range_cidrs`|CosmosDB Firewall Support: This value specifies the set of IP addresses or IP address ranges in CIDR form to be included as the allowed list of client IP's for a given database account. IP addresses/ranges must be comma separated and must not contain any spaces.|list(string)|`[]`
+`consistency_policy`|The Consistency Level to use for this CosmosDB Account - can be either `BoundedStaleness`, `Eventual`, `Session`, `Strong` or `ConsistentPrefix`. `max_interval_in_seconds` and `max_staleness_prefix` can only be set to custom values when `consistency_level` is set to `BoundedStaleness` - otherwise they will return the default values|object({})|`BoundedStaleness`
+`failover_locations`|The name of the Azure region to host replicated data and their priority.|list(object({}))|`null`
+`capabilities`|Configures the capabilities to enable for this Cosmos DB account. Possible values are `AllowSelfServeUpgradeToMongo36`, `DisableRateLimitingResponses`, `EnableAggregationPipeline`, `EnableCassandra`, `EnableGremlin`, `EnableMongo`, `EnableTable`, `EnableServerless`, `MongoDBv3.4` and `mongoEnableDocLevelTTL`|list(string)|`null`
+`virtual_network_rules`|Configures the virtual network subnets allowed to access this Cosmos DB account|list(object({}))|`null`
+`backup`|Specifies the backup setting for different types, intervals and retention time in hours that each backup is retained|map(string)|`{}`
+`cors_rules`|Cross-Origin Resource Sharing (CORS) is an HTTP feature that enables a web application running under one domain to access resources in another domain.|object({})|`null`
+`managed_identity`|Specifies the type of Managed Service Identity that should be configured on this Cosmos Account. Possible value is only `SystemAssigned`|string|`false`
+`enable_private_endpoint`|Manages a Private Endpoint to Azure cosmosdb account|string|`false`
+`virtual_network_name`|The name of the virtual network|string|`""`
+`existing_private_dns_zone`|Name of the existing private DNS zone|string|`null`
+`private_subnet_address_prefix`|The name of the subnet for private endpoints|list(string)|`null`
+`enable_advanced_threat_protection`|Threat detection policy configuration, known in the API as Server Security Alerts Policy. Currently available only for the SQL API|string|`false`
 `storage_account_name`|The name of the storage account name|string|`null`
 `log_analytics_workspace_name`|The name of log analytics workspace name|string|`null`
+`cosmosdb_table_name`|Specifies the name of the Cosmos DB Table|string|`null`
+`cosmosdb_table_throughput`|The throughput of Table (RU/s). Must be set in increments of `100`. The minimum value is `400`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply|number|`null`
+`cosmosdb_table_autoscale_settings`|The maximum throughput of the Table (RU/s). Must be between `4,000` and `1,000,000`. Must be set in increments of `1,000`. Conflicts with `throughput`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply.|number|`null`
+`create_cosmosdb_sql_database`|Manages a SQL Database within a Cosmos DB Account|string|`false`
+`cosmosdb_sql_database_name`|Specifies the name of the Cosmos DB SQL database|string|`null`
+`cosmosdb_sqldb_throughput`|The throughput of Table (RU/s). Must be set in increments of `100`. The minimum value is `400`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply|number|`null`
+`cosmosdb_sqldb_autoscale_settings`|The maximum throughput of the Table (RU/s). Must be between `4,000` and `1,000,000`. Must be set in increments of `1,000`. Conflicts with `throughput`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply.|number|`null`
+`create_cosmosdb_sql_container`|Manages a SQL Container within a Cosmos DB Account|string|`false`
+`cosmosdb_sql_container_name`|Specifies the name of the Cosmos DB sql container|string|`null`
+`partition_key_path`|Define a partition key|string|`""`
+`partition_key_version`|Define a partition key version. Possible values are `1` and `2`. This should be set to `2` in order to use large partition keys|number|`1`
+`sql_container_throughput`|The throughput of Table (RU/s). Must be set in increments of `100`. The minimum value is `400`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply|number|`null`
+`sql_container_autoscale_settings`|The maximum throughput of the Table (RU/s). Must be between `4,000` and `1,000,000`. Must be set in increments of `1,000`. Conflicts with `throughput`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply.|number|`null`
+`unique_key`|A list of paths to use for this unique key|list(string)|`null`
+`indexing_policy`|Specifies how the container's items should be indexed. The default indexing policy for newly created containers indexes every property of every item and enforces range indexes for any string or number|object|`{}`
+`conflict_resolution_policy`|Conflicts and conflict resolution policies are applicable if your Azure Cosmos DB account is configured with multiple write regions|string|`null`
+`default_ttl`|The default time to live of SQL container. If missing, items are not expired automatically. If present and the value is set to `-1`, it is equal to infinity, and items don’t expire by default. If present and the value is set to some number `n` – items will expire `n` seconds after their last modified time|number|`null`
+`analytical_storage_ttl`|The default time to live of Analytical Storage for this SQL container. If present and the value is set to `-1`, it is equal to infinity, and items don’t expire by default. If present and the value is set to some number `n` – items will expire `n2` seconds after their last modified time|number|`null`
 `Tags`|A map of tags to add to all resources|map|`{}`
 
 ## Outputs
 
 Name | Description
 ---- | -----------
-`resource_group_name` | The name of the resource group in which resources are created
-`resource_group_location`| The location of the resource group in which resources are created
-`storage_account_name`|The name of the storage account
+`cosmosdb_id` | The CosmosDB Account resource ID
+`cosmosdb_endpoint`| The endpoint used to connect to the CosmosDB account
+`cosmosdb_read_endpoints`|A list of read endpoints available for this CosmosDB account
+`cosmosdb_write_endpoints`|A list of write endpoints available for this CosmosDB account
+`cosmosdb_primary_key`|The Primary master key for the CosmosDB Account
+`cosmosdb_secondary_key`|The Secondary master key for the CosmosDB Account
+`cosmosdb_primary_readonly_key`|The Primary read-only master Key for the CosmosDB Account
+`cosmosdb_secondary_readonly_key`|The Secondary read-only master key for the CosmosDB Account
+`cosmosdb_connection_strings`|A list of connection strings available for this CosmosDB account
+`cosmosdb_private_endpoint`|id of the Cosmosdb Account Private Endpoint
+`cosmosdb_private_dns_zone_domain`|DNS zone name of Cosmosdb Account Private endpoints dns name records
+`cosmosdb_private_endpoint_ip`|CosmosDB account private endpoint IPv4 Addresses
+`cosmosdb_private_endpoint_fqdn`|CosmosDB account server private endpoint FQDN Addresses
+`cosmosdb_table_id`|The resource ID of the CosmosDB Table
+cosmosdb_sql_database_id|The resource ID of the CosmosDB SQL Database
 
 ## Resource Graph
 
@@ -226,6 +269,6 @@ Originally created by [Kumaraswamy Vithanala](mailto:kumarvna@gmail.com)
 
 ## Other resources
 
-* [Azure SQL Database documentation](https://docs.microsoft.com/en-us/azure/sql-database/)
+* [Azure CosmosDB Account documentation](https://docs.microsoft.com/en-us/azure/cosmos-db/)
 
 * [Terraform AzureRM Provider Documentation](https://www.terraform.io/docs/providers/azurerm/index.html)

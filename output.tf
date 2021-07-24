@@ -49,31 +49,31 @@ output "cosmosdb_connection_strings" {
 }
 
 output "cosmosdb_private_endpoint" {
-  description = "id of the Redis Cache server Private Endpoint"
+  description = "id of the Cosmosdb Account Private Endpoint"
   value       = var.enable_private_endpoint ? element(concat(azurerm_private_endpoint.pep1.*.id, [""]), 0) : null
 }
 
 output "cosmosdb_private_dns_zone_domain" {
-  description = "DNS zone name of Redis Cache server Private endpoints dns name records"
+  description = "DNS zone name of Cosmosdb Account Private endpoints dns name records"
   value       = var.existing_private_dns_zone == null && var.enable_private_endpoint ? element(concat(azurerm_private_dns_zone.dnszone1.*.name, [""]), 0) : var.existing_private_dns_zone
 }
 
 output "cosmosdb_private_endpoint_ip" {
-  description = "Redis Cache server private endpoint IPv4 Addresses"
+  description = "CosmosDB account private endpoint IPv4 Addresses"
   value       = var.enable_private_endpoint ? element(concat(data.azurerm_private_endpoint_connection.private-ip1.*.private_service_connection.0.private_ip_address, [""]), 0) : null
 }
 
 output "cosmosdb_private_endpoint_fqdn" {
-  description = "Redis Cache server private endpoint FQDN Addresses"
+  description = "CosmosDB account server private endpoint FQDN Addresses"
   value       = var.enable_private_endpoint ? element(concat(azurerm_private_dns_a_record.arecord1.*.fqdn, [""]), 0) : null
 }
 
 output "cosmosdb_table_id" {
   description = "The resource ID of the CosmosDB Table"
-  value = var.create_cosmosdb_table ? azurerm_cosmosdb_table.main.0.id : null
+  value       = var.create_cosmosdb_table ? azurerm_cosmosdb_table.main.0.id : null
 }
 
 output "cosmosdb_sql_database_id" {
   description = "The resource ID of the CosmosDB SQL Database."
-  value = var.create_cosmosdb_sql_database ? azurerm_cosmosdb_sql_database.main.0.id : null
+  value       = var.create_cosmosdb_sql_database ? azurerm_cosmosdb_sql_database.main.0.id : null
 }

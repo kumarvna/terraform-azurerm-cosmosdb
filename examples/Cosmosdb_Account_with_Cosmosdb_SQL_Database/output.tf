@@ -49,21 +49,21 @@ output "cosmosdb_connection_strings" {
 }
 
 output "cosmosdb_private_endpoint" {
-  description = "id of the Redis Cache server Private Endpoint"
+  description = "id of the CosmosDB Account Private Endpoint"
   value       = module.cosmosdb.cosmosdb_private_endpoint
 }
 
 output "cosmosdb_private_dns_zone_domain" {
-  description = "DNS zone name of Redis Cache server Private endpoints dns name records"
+  description = "DNS zone name of CosmosDB Account Private endpoints dns name records"
   value       = module.cosmosdb.cosmosdb_private_dns_zone_domain
 }
 
 output "cosmosdb_private_endpoint_ip" {
-  description = "Redis Cache server private endpoint IPv4 Addresses"
+  description = "CosmosDB Account private endpoint IPv4 Addresses"
   value       = module.cosmosdb.cosmosdb_private_endpoint_ip
 }
 
 output "cosmosdb_private_endpoint_fqdn" {
-  description = "Redis Cache server private endpoint FQDN Addresses"
+  description = "CosmosDB Account private endpoint FQDN Addresses"
   value       = module.cosmosdb.cosmosdb_private_endpoint_fqdn
 }

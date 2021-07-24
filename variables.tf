@@ -44,6 +44,7 @@ variable "consistency_policy" {
     max_interval_in_seconds = optional(number)
     max_staleness_prefix    = optional(number)
   })
+  description = "Consistency levels in Azure Cosmos DB"
 }
 
 variable "failover_locations" {
@@ -90,17 +91,17 @@ variable "cors_rules" {
     exposed_headers    = list(string)
     max_age_in_seconds = number
   })
-  description = "value"
+  description = "Cross-Origin Resource Sharing (CORS) is an HTTP feature that enables a web application running under one domain to access resources in another domain."
   default     = null
 }
 
 variable "managed_identity" {
-  description = "If you want your SQL Server to have an managed identity. Defaults to false."
+  description = "Specifies the type of Managed Service Identity that should be configured on this Cosmos Account. Possible value is only SystemAssigned. Defaults to false."
   default     = false
 }
 
 variable "enable_private_endpoint" {
-  description = "Manages a Private Endpoint to Azure database for Redis"
+  description = "Manages a Private Endpoint to Azure cosmosdb account"
   default     = false
 }
 
@@ -151,7 +152,7 @@ variable "cosmosdb_table_name" {
 
 variable "cosmosdb_table_throughput" {
   description = "The throughput of Table (RU/s). Must be set in increments of `100`. The minimum value is `400`. This must be set upon database creation otherwise it cannot be updated without a manual terraform destroy-apply."
-  default     = 400
+  default     = null
 }
 
 variable "cosmosdb_table_autoscale_settings" {
@@ -191,7 +192,7 @@ variable "create_cosmosdb_sql_container" {
 }
 
 variable "cosmosdb_sql_container_name" {
-  description = "value"
+  description = "Specifies the name of the Cosmos DB sql container"
   default     = null
 }
 

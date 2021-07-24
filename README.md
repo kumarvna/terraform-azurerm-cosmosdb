@@ -1,6 +1,6 @@
 # CosmosDB Account Terraform Module
 
-Azure Cosmos DB is a fully managed platform-as-a-service (PaaS). To use Azure Cosmos DB, initially create an Azure Cosmos account and then databases, containers, items under it. This terraform module helps quickly create a cosmosDB account with cosmosdb table, SQL database and containers resources.
+Azure Cosmos DB is a fully managed platform-as-a-service (PaaS). To use Azure Cosmos DB, initially create an Azure Cosmos account and then databases, containers, items under it. This terraform module helps quickly create a CosmosDB account with CosmosDB table, SQL database and SQL Containers resources.
 
 > **[!NOTE]**
 > **This module supports the meta arguments including `providers`, `depends_on`, `count`, and `for_each`.**
@@ -17,7 +17,7 @@ Azure Cosmos DB is a fully managed platform-as-a-service (PaaS). To use Azure Co
 
 ## Module Usage
 
-```hcl
+```terraform
 #Azure provider Configuration
 provider "azurerm" {
   features {}
@@ -257,7 +257,7 @@ Name | Description
 `cosmosdb_private_endpoint_ip`|CosmosDB account private endpoint IPv4 Addresses
 `cosmosdb_private_endpoint_fqdn`|CosmosDB account server private endpoint FQDN Addresses
 `cosmosdb_table_id`|The resource ID of the CosmosDB Table
-cosmosdb_sql_database_id|The resource ID of the CosmosDB SQL Database
+`cosmosdb_sql_database_id`|The resource ID of the CosmosDB SQL Database
 
 ## Resource Graph
 
